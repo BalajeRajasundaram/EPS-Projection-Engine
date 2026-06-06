@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Institutional-grade US Stock Value Analyzer and Fund Builder with DCF valuation, AI growth projections, and portfolio analytics.">
+  <title>Stock Value Analyzer &amp; Fund Builder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📊</div>
+        <div>
+          <div class="logo-text">ValueScope</div>
+          <div class="logo-sub">Fund Analyzer</div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <div class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <span class="nav-icon">🏠</span> Dashboard
+        </div>
+        <div class="nav-item" data-view="screener" id="nav-screener">
+          <span class="nav-icon">🔍</span> Screener
+          <span class="nav-badge">1000</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Analysis</div>
+        <div class="nav-item" data-view="analysis" id="nav-analysis">
+          <span class="nav-icon">📈</span> Stock Analysis
+        </div>
+        <div class="nav-item" data-view="research" id="nav-research">
+          <span class="nav-icon">📋</span> Research Hub
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Portfolio</div>
+        <div class="nav-item" data-view="basket" id="nav-basket">
+          <span class="nav-icon">🧺</span> Fund Builder
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div>ValueScope v1.0</div>
+        <div style="margin-top:4px">Data: Yahoo Finance + AI Research</div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+      <!-- ====== DASHBOARD VIEW ====== -->
+      <div class="view active" id="view-dashboard">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Market Dashboard</h1>
+            <p class="page-subtitle">Real-time market overview &amp; top value opportunities</p>
+          </div>
+          <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="search-global" placeholder="Search any US stock ticker or name..." autocomplete="off">
+            <div class="search-results" id="search-results-global"></div>
+          </div>
+        </div>
+
+        <!-- Market Indices -->
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">🌍</span>
+            <h2 class="section-title">Market Overview</h2>
+          </div>
+          <div class="grid-5 stagger-fade" id="market-indices"></div>
+        </div>
+
+        <!-- Sector Rotation / Regime -->
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">🔄</span>
+            <h2 class="section-title">Macro Environment &amp; Sector Rotation</h2>
+          </div>
+          <div class="grid-3" id="macro-cards"></div>
+        </div>
+
+        <!-- Top Value Picks -->
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">💎</span>
+            <h2 class="section-title">Top Value Opportunities</h2>
+          </div>
+          <div id="top-value-picks"></div>
+        </div>
+
+        <!-- Sector Best Picks -->
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">🏢</span>
+            <h2 class="section-title">Best Value by Sector</h2>
+          </div>
+          <div class="grid-3 stagger-fade" id="sector-picks"></div>
+        </div>
+      </div>
+
+      <!-- ====== SCREENER VIEW ====== -->
+      <div class="view" id="view-screener">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Stock Screener</h1>
+            <p class="page-subtitle">Filter and sort 1000 US stocks across all sectors</p>
+          </div>
+        </div>
+
+        <div class="filter-bar" id="screener-filters">
+          <select class="filter-select" id="filter-sector">
+            <option value="">All Sectors</option>
+            <option value="Technology">Technology</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Financials">Financials</option>
+            <option value="Consumer Cyclical">Consumer Cyclical</option>
+            <option value="Communication Services">Communication Services</option>
+            <option value="Industrials">Industrials</option>
+            <option value="Consumer Defensive">Consumer Defensive</option>
+            <option value="Energy">Energy</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Basic Materials">Basic Materials</option>
+          </select>
+          <select class="filter-select" id="filter-cap">
+            <option value="">All Cap Sizes</option>
+            <option value="Mega">Mega Cap (&gt;200B)</option>
+            <option value="Large">Large Cap (10-200B)</option>
+            <option value="Mid">Mid Cap (2-10B)</option>
+            <option value="Small">Small Cap (&lt;2B)</option>
+          </select>
+          <select class="filter-select" id="filter-ai">
+            <option value="">All AI Tiers</option>
+            <option value="1">Tier 1: AI Enabler</option>
+            <option value="2">Tier 2: AI Adopter</option>
+            <option value="3">Tier 3: AI Beneficiary</option>
+            <option value="4">Tier 4: Neutral</option>
+          </select>
+          <input type="text" class="search-input" id="screener-search" placeholder="Filter by ticker or name..." style="max-width:240px;padding-left:14px">
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="screener-table">
+            <thead>
+              <tr>
+                <th data-sort="ticker">Ticker ↕</th>
+                <th data-sort="name">Company ↕</th>
+                <th data-sort="sector">Sector ↕</th>
+                <th data-sort="marketCapTier">Cap ↕</th>
+                <th data-sort="aiTier">AI Tier ↕</th>
+              </tr>
+            </thead>
+            <tbody id="screener-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="screener-pagination"></div>
+      </div>
+
+      <!-- ====== ANALYSIS VIEW ====== -->
+      <div class="view" id="view-analysis">
+        <!-- Empty state -->
+        <div id="analysis-empty" class="empty-state">
+          <div class="empty-icon">📈</div>
+          <div class="empty-title">Select a Stock to Analyze</div>
+          <div class="empty-text">Search for any US stock ticker above, or pick one from the Screener or Dashboard.</div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="analysis-loading" class="loading-state hidden">
+          <div class="spinner"></div>
+          <div class="loading-text">Fetching financial data...</div>
+        </div>
+
+        <!-- Analysis Content -->
+        <div id="analysis-content" class="hidden">
+          <!-- Stock Header -->
+          <div class="stock-header" id="stock-header"></div>
+
+          <!-- Suitability Banner -->
+          <div id="suitability-banner"></div>
+
+          <!-- Badges Row -->
+          <div class="flex gap-12 mb-20" id="stock-badges"></div>
+
+          <!-- Ownership & Profile -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">🏛️</span>
+              <h2 class="section-title">Company Profile &amp; Ownership</h2>
+            </div>
+            <div class="grid-2" id="profile-section"></div>
+          </div>
+
+          <!-- Financial Health Scorecard -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">💰</span>
+              <h2 class="section-title">Financial Health Scorecard</h2>
+            </div>
+            <div id="financial-cards"></div>
+          </div>
+
+          <!-- Earnings Quality / Forensic Scores -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">🔬</span>
+              <h2 class="section-title">Earnings Quality &amp; Forensic Scores</h2>
+            </div>
+            <div class="grid-3" id="forensic-scores"></div>
+          </div>
+
+          <!-- Growth Projection -->
+          <div class="section" id="growth-section">
+            <div class="section-header">
+              <span class="section-icon">🚀</span>
+              <h2 class="section-title">Growth Projections &amp; AI Impact</h2>
+            </div>
+            <div class="grid-2">
+              <div class="growth-card" id="growth-metrics"></div>
+              <div class="chart-container" id="growth-chart-container">
+                <canvas id="growth-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- DCF Calculator -->
+          <div class="section" id="dcf-section">
+            <div class="section-header">
+              <span class="section-icon">🧮</span>
+              <h2 class="section-title">DCF Intrinsic Value Calculator</h2>
+            </div>
+            <div class="grid-2">
+              <div class="card" id="dcf-sliders"></div>
+              <div class="dcf-result" id="dcf-result"></div>
+            </div>
+          </div>
+
+          <!-- Buying Opportunity Score -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">🎯</span>
+              <h2 class="section-title">Buying Opportunity Score</h2>
+            </div>
+            <div class="grid-2">
+              <div class="card" id="score-gauge"></div>
+              <div class="card" id="score-explanation"></div>
+            </div>
+          </div>
+
+          <!-- Price Chart -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">📉</span>
+              <h2 class="section-title">Price Chart &amp; Technicals</h2>
+            </div>
+            <div class="flex gap-12 mb-16">
+              <div class="tabs" id="chart-range-tabs"></div>
+            </div>
+            <div class="chart-container">
+              <canvas id="price-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Research Checklist -->
+          <div class="section">
+            <div class="section-header">
+              <span class="section-icon">📋</span>
+              <h2 class="section-title">Pre-Investment Research Checklist</h2>
+            </div>
+            <div class="card">
+              <ul class="checklist" id="research-checklist"></ul>
+            </div>
+          </div>
+
+          <!-- Add to Basket -->
+          <div class="section">
+            <div class="card flex items-center gap-16" id="add-to-basket-panel">
+              <span style="font-size:1.3rem">🧺</span>
+              <span class="fw-600">Add to Fund Basket</span>
+              <input type="number" class="basket-input" id="basket-shares-input" placeholder="Shares" min="1" value="10" style="width:100px">
+              <button class="btn btn-success btn-sm" id="btn-add-basket">+ Add to Basket</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== RESEARCH HUB VIEW ====== -->
+      <div class="view" id="view-research">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Pre-Investment Research Hub</h1>
+            <p class="page-subtitle">Critical research frameworks for institutional-grade investing</p>
+          </div>
+        </div>
+        <div id="research-hub-content"></div>
+      </div>
+
+      <!-- ====== BASKET / FUND BUILDER VIEW ====== -->
+      <div class="view" id="view-basket">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Fund Builder</h1>
+            <p class="page-subtitle">Construct, analyze, and backtest your portfolio</p>
+          </div>
+          <div class="flex gap-12">
+            <select class="filter-select" id="basket-select"></select>
+            <button class="btn btn-primary btn-sm" id="btn-new-basket">+ New Basket</button>
+            <button class="btn btn-secondary btn-sm" id="btn-export-basket">📥 Export CSV</button>
+          </div>
+        </div>
+
+        <!-- Basket Holdings -->
+        <div class="section">
+          <div class="section-header">
+            <span class="section-icon">📦</span>
+            <h2 class="section-title">Holdings</h2>
+          </div>
+          <div id="basket-holdings"></div>
+          <div id="basket-empty" class="empty-state">
+            <div class="empty-icon">🧺</div>
+            <div class="empty-title">Your basket is empty</div>
+            <div class="empty-text">Analyze stocks and add them to your basket to build a portfolio.</div>
+          </div>
+        </div>
+
+        <!-- Portfolio Analytics -->
+        <div class="section" id="portfolio-analytics-section" class="hidden">
+          <div class="section-header">
+            <span class="section-icon">📊</span>
+            <h2 class="section-title">Portfolio Analytics</h2>
+          </div>
+          <div class="grid-4 stagger-fade" id="portfolio-metrics"></div>
+        </div>
+
+        <!-- Sector Allocation & Charts -->
+        <div class="section" id="portfolio-charts-section" class="hidden">
+          <div class="grid-2">
+            <div class="chart-container">
+              <div class="card-title mb-16">Sector Allocation</div>
+              <canvas id="sector-pie-chart"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="card-title mb-16">Valuation Distribution</div>
+              <canvas id="valuation-pie-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backtest -->
+        <div class="section" id="backtest-section" class="hidden">
+          <div class="section-header">
+            <span class="section-icon">⏳</span>
+            <h2 class="section-title">Historical Backtest</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="backtest-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /app -->
+
+  <!-- Modal for new basket -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h3 class="modal-title" id="modal-title">New Basket</h3>
+      <div id="modal-body">
+        <div class="slider-group">
+          <label class="slider-label">Basket Name</label>
+          <input type="text" class="search-input w-full" id="modal-basket-name" placeholder="e.g., Growth Portfolio" style="padding-left:14px;margin-top:8px">
+        </div>
+      </div>
+      <div class="flex gap-12 mt-20" style="justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="modal-confirm">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="stockUniverse.js"></script>
+  <script src="mockData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
