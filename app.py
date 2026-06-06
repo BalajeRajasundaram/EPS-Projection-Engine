@@ -163,10 +163,12 @@ if st.button("Fetch Data", type="primary", use_container_width=True):
 
 if st.session_state.raw_data is not None and not st.session_state.raw_data.empty:
     st.header("2. Adjust Parameters")
-    st.markdown("Review and adjust the extracted data below. The projections will use these exact values. **You can double-click any cell to edit it.**")
+    st.markdown("Review and adjust the extracted data below. The projections will use these exact values. **You can double-click any cell to edit it.** *(Table is transposed to fit perfectly on mobile screens)*")
     
-    # Editable dataframe
-    edited_df = st.data_editor(st.session_state.raw_data, num_rows="dynamic", use_container_width=True)
+    # Editable dataframe (Transposed for Mobile)
+    df_for_editing = st.session_state.raw_data.set_index('Ticker').T
+    edited_df_t = st.data_editor(df_for_editing, use_container_width=True)
+    edited_df = edited_df_t.T.reset_index()
     
     st.header("3. Generate Projections")
     projection_length = st.radio("Projection Window", [5, 10], index=0, format_func=lambda x: f"{x} Years", horizontal=True)
