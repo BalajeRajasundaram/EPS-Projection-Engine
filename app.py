@@ -41,6 +41,9 @@ max_growth_cap = st.sidebar.slider("Maximum Growth Cap (%)", min_value=5.0, max_
 discount_rate = st.sidebar.slider("Required Rate of Return (%)", min_value=5.0, max_value=25.0, value=12.0, step=1.0)
 st.sidebar.markdown("*Used to discount the Year 5 projected price back to today to determine fair value.*")
 
+st.sidebar.markdown("---")
+st.sidebar.caption("⚠️ **Disclaimer:** This tool is for educational and informational purposes only. It does not constitute financial advice or investment recommendations. All projections are strictly mathematical extrapolations based on historical data and do not guarantee future performance. Please consult a licensed financial advisor before making any investment decisions.")
+
 def get_cagr(start_val, end_val, years):
     if start_val <= 0 or end_val <= 0 or years <= 0:
         return 0
