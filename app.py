@@ -9,7 +9,7 @@ import xlsxwriter
 
 st.set_page_config(page_title="EPS Projection Engine", layout="wide")
 
-st.title("📈 Antigravity EPS Projection & Valuation Engine")
+st.title("📈 EPS Projection & Valuation Engine")
 st.markdown("Fetch historical data, adjust parameters, and generate 10-year stock value projections to Excel.")
 
 # --- Formulas Explanation ---
