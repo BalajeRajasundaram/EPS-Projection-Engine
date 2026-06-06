@@ -42,6 +42,7 @@ discount_rate = st.sidebar.slider("Required Rate of Return (%)", min_value=5.0, 
 st.sidebar.markdown("*Used to discount the Year 5 projected price back to today to determine fair value.*")
 
 st.sidebar.markdown("---")
+st.sidebar.caption("© 2026 Balaje Rajasundaram. All rights reserved. **Strictly for Non-Commercial & Educational Use.**")
 st.sidebar.caption("⚠️ **Disclaimer:** This tool is for educational and informational purposes only. It does not constitute financial advice or investment recommendations. All projections are strictly mathematical extrapolations based on historical data and do not guarantee future performance. Please consult a licensed financial advisor before making any investment decisions.")
 
 st.header("1. Fetch Data")
