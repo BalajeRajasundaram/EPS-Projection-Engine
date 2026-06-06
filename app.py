@@ -3,6 +3,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import io
 import xlsxwriter
 
@@ -35,14 +36,16 @@ with st.expander("ℹ️ How Projections Are Calculated (Formulas)", expanded=Fa
     """)
 
 # Sidebar settings
-st.sidebar.header("1. Fetch Data")
-tickers_input = st.sidebar.text_area("Stock Tickers (comma separated)", "AAPL, MSFT, RELIANCE.NS")
+st.sidebar.header("⚙️ Settings")
 max_growth_cap = st.sidebar.slider("Maximum Growth Cap (%)", min_value=5.0, max_value=50.0, value=20.0, step=1.0)
 discount_rate = st.sidebar.slider("Required Rate of Return (%)", min_value=5.0, max_value=25.0, value=12.0, step=1.0)
 st.sidebar.markdown("*Used to discount the Year 5 projected price back to today to determine fair value.*")
 
 st.sidebar.markdown("---")
 st.sidebar.caption("⚠️ **Disclaimer:** This tool is for educational and informational purposes only. It does not constitute financial advice or investment recommendations. All projections are strictly mathematical extrapolations based on historical data and do not guarantee future performance. Please consult a licensed financial advisor before making any investment decisions.")
+
+st.header("1. Fetch Data")
+tickers_input = st.text_input("Enter Stock Tickers (comma separated):", "AAPL, MSFT, RELIANCE.NS")
 
 def get_cagr(start_val, end_val, years):
     if start_val <= 0 or end_val <= 0 or years <= 0:
@@ -150,7 +153,7 @@ def fetch_stock_data(tickers):
 if 'raw_data' not in st.session_state:
     st.session_state.raw_data = None
 
-if st.sidebar.button("Fetch Data"):
+if st.button("Fetch Data", type="primary", use_container_width=True):
     tickers = [t.strip().upper() for t in tickers_input.split(',') if t.strip()]
     if tickers:
         with st.spinner("Fetching historical data and calculating 5-Year Avg PE..."):
@@ -315,8 +318,7 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                 st.markdown(f"**5-Year Return:** {growth_pct:.1f}% | **Will it double?** {doubles_text}")
                 st.markdown(f"**Intrinsic Fair Value Today (assuming {discount_rate}% required return):** ${discounted_fair_value:.2f} ({val_status})")
                 
-                # Preview Plot side-by-side
-                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+                # Preview Plot side-by-side using Plotly
                 current_year = pd.Timestamp.now().year
                 real_years = list(range(current_year + 1, current_year + projection_length + 1))
                 
@@ -327,27 +329,25 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                     f"15Y Price Trend ({r15*100:.1f}%)": r15
                 }
                 
+                col1, col2 = st.columns(2)
+                
                 # Plot 1: Target PE
+                fig1 = go.Figure()
                 for sc_name, rate in scenarios.items():
                     prices = [eps * ((1 + rate) ** y) * stock_pe for y in range(1, projection_length + 1)]
-                    ax1.plot(real_years, prices, marker='o', label=sc_name)
-                    
-                ax1.set_title(f"{projection_length}-Year Projection via Target P/E ({stock_pe})")
-                ax1.set_xlabel("Year")
-                ax1.set_ylabel("Projected Price ($)")
-                ax1.grid(True, alpha=0.3)
-                ax1.legend()
+                    fig1.add_trace(go.Scatter(x=real_years, y=prices, mode='lines+markers', name=sc_name))
+                fig1.update_layout(title=f"{projection_length}-Year Projection via Target P/E ({stock_pe})", xaxis_title="Year", yaxis_title="Projected Price ($)", margin=dict(l=20, r=20, t=40, b=20))
+                
+                with col1:
+                    st.plotly_chart(fig1, use_container_width=True)
                 
                 # Plot 2: Industry PE
+                fig2 = go.Figure()
                 for sc_name, rate in scenarios.items():
                     ind_prices = [eps * ((1 + rate) ** y) * ind_pe for y in range(1, projection_length + 1)]
-                    ax2.plot(real_years, ind_prices, marker='o', linestyle='--', label=sc_name)
-                    
-                ax2.set_title(f"{projection_length}-Year Projection via Industry P/E ({ind_pe})")
-                ax2.set_xlabel("Year")
-                ax2.set_ylabel("Projected Price ($)")
-                ax2.grid(True, alpha=0.3)
-                ax2.legend()
+                    line_dash = 'dash' if 'Trend' in sc_name else 'solid'
+                    fig2.add_trace(go.Scatter(x=real_years, y=ind_prices, mode='lines+markers', name=sc_name, line=dict(dash=line_dash)))
+                fig2.update_layout(title=f"{projection_length}-Year Projection via Industry P/E ({ind_pe})", xaxis_title="Year", yaxis_title="Projected Price ($)", margin=dict(l=20, r=20, t=40, b=20))
                 
-                fig.tight_layout()
-                st.pyplot(fig)
+                with col2:
+                    st.plotly_chart(fig2, use_container_width=True)
