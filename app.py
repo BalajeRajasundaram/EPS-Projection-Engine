@@ -342,12 +342,12 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                     title=f"{projection_length}-Year Projection via Target P/E ({stock_pe})", 
                     xaxis_title="Year", 
                     yaxis_title="Projected Price ($)", 
-                    margin=dict(l=20, r=20, t=40, b=20),
+                    margin=dict(l=20, r=20, t=50, b=20),
                     legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5)
                 )
                 
                 with col1:
-                    st.plotly_chart(fig1, use_container_width=True)
+                    st.plotly_chart(fig1, use_container_width=True, config={'displayModeBar': False})
                 
                 # Plot 2: Industry PE
                 fig2 = go.Figure()
@@ -359,9 +359,9 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                     title=f"{projection_length}-Year Projection via Industry P/E ({ind_pe})", 
                     xaxis_title="Year", 
                     yaxis_title="Projected Price ($)", 
-                    margin=dict(l=20, r=20, t=40, b=20),
+                    margin=dict(l=20, r=20, t=50, b=20),
                     legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5)
                 )
                 
                 with col2:
-                    st.plotly_chart(fig2, use_container_width=True)
+                    st.plotly_chart(fig2, use_container_width=True, config={'displayModeBar': False})
