@@ -336,7 +336,13 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                 for sc_name, rate in scenarios.items():
                     prices = [eps * ((1 + rate) ** y) * stock_pe for y in range(1, projection_length + 1)]
                     fig1.add_trace(go.Scatter(x=real_years, y=prices, mode='lines+markers', name=sc_name))
-                fig1.update_layout(title=f"{projection_length}-Year Projection via Target P/E ({stock_pe})", xaxis_title="Year", yaxis_title="Projected Price ($)", margin=dict(l=20, r=20, t=40, b=20))
+                fig1.update_layout(
+                    title=f"{projection_length}-Year Projection via Target P/E ({stock_pe})", 
+                    xaxis_title="Year", 
+                    yaxis_title="Projected Price ($)", 
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5)
+                )
                 
                 with col1:
                     st.plotly_chart(fig1, use_container_width=True)
@@ -347,7 +353,13 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                     ind_prices = [eps * ((1 + rate) ** y) * ind_pe for y in range(1, projection_length + 1)]
                     line_dash = 'dash' if 'Trend' in sc_name else 'solid'
                     fig2.add_trace(go.Scatter(x=real_years, y=ind_prices, mode='lines+markers', name=sc_name, line=dict(dash=line_dash)))
-                fig2.update_layout(title=f"{projection_length}-Year Projection via Industry P/E ({ind_pe})", xaxis_title="Year", yaxis_title="Projected Price ($)", margin=dict(l=20, r=20, t=40, b=20))
+                fig2.update_layout(
+                    title=f"{projection_length}-Year Projection via Industry P/E ({ind_pe})", 
+                    xaxis_title="Year", 
+                    yaxis_title="Projected Price ($)", 
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5)
+                )
                 
                 with col2:
                     st.plotly_chart(fig2, use_container_width=True)
