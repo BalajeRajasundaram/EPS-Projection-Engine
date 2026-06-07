@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 @st.cache_data(ttl=86400) # Cache for 24 hours
-def scan_index(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
+def scan_index_v2(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
     cap = max_growth_cap_pct / 100.0
     
     # We will only scan the first 100 stocks of S&P500 to avoid a massive 15-minute wait, 

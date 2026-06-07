@@ -157,13 +157,13 @@ if st.session_state.current_view == "screener":
     scanned_df = None
     
     if idx_cols[0].button("Scan NASDAQ 100", use_container_width=True):
-        scanned_df = screener.scan_index("NASDAQ 100", tickers.get_nasdaq100_tickers(), max_growth_cap, discount_rate)
+        scanned_df = screener.scan_index_v2("NASDAQ 100", tickers.get_nasdaq100_tickers(), max_growth_cap, discount_rate)
     if idx_cols[1].button("Scan S&P 500", use_container_width=True):
-        scanned_df = screener.scan_index("S&P 500", tickers.get_sp500_tickers(), max_growth_cap, discount_rate)
+        scanned_df = screener.scan_index_v2("S&P 500", tickers.get_sp500_tickers(), max_growth_cap, discount_rate)
     if idx_cols[2].button("Scan NIFTY 50", use_container_width=True):
-        scanned_df = screener.scan_index("NIFTY 50", tickers.get_nifty50_tickers(), max_growth_cap, discount_rate)
+        scanned_df = screener.scan_index_v2("NIFTY 50", tickers.get_nifty50_tickers(), max_growth_cap, discount_rate)
     if idx_cols[3].button("Scan NIFTY Next 50", use_container_width=True):
-        scanned_df = screener.scan_index("NIFTY Next 50", tickers.get_nifty_next_50_tickers(), max_growth_cap, discount_rate)
+        scanned_df = screener.scan_index_v2("NIFTY Next 50", tickers.get_nifty_next_50_tickers(), max_growth_cap, discount_rate)
         
     if scanned_df is not None and not scanned_df.empty:
         st.subheader("Screener Results")
