@@ -89,18 +89,23 @@ def scan_index(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
             year_5_price = current_eps * ((1 + rate_5y_base) ** 5) * target_pe
             growth_pct = ((year_5_price / current_price) - 1) * 100 if current_price > 0 else 0
             
-            # Classification
-            if growth_pct >= 100:
-                classification = "✅ Conservatively Double"
-            elif growth_pct >= 20:
-                classification = "🟡 May Have Potential"
-            else:
-                classification = "🔴 May Not Absolutely"
+            ind_pe = pe_ratio * 0.9
+            year_5_ind_price = current_eps * ((1 + rate_5y_base) ** 5) * ind_pe
+            growth_pct_ind = ((year_5_ind_price / current_price) - 1) * 100 if current_price > 0 else 0
+            
+            def get_classification(pct):
+                if pct >= 100: return "✅ Conservatively Double"
+                elif pct >= 20: return "🟡 May Have Potential"
+                else: return "🔴 May Not Absolutely"
+                
+            classification = get_classification(growth_pct)
+            classification_ind = get_classification(growth_pct_ind)
                 
             data_list.append({
                 'Ticker': ticker_symbol,
                 'Name': stock_name,
-                'Classification': classification,
+                'Classification (Target P/E)': classification,
+                'Classification (Industry P/E)': classification_ind,
                 'Current Price': round(current_price, 2),
                 'Projected 5Y Price': round(year_5_price, 2),
                 'Projected Return (%)': round(growth_pct, 1),
