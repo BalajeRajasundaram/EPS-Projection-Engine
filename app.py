@@ -11,8 +11,14 @@ import screener
 
 st.set_page_config(page_title="EPS Projection Engine", layout="wide")
 
-password = st.text_input("🔒 Enter Password to access the Engine:", type="password")
-if password != "abcd":
+if st.session_state.get('authenticated') != True:
+    st.title("🔒 Login")
+    pwd = st.text_input("Enter Password to access the Engine:", type="password")
+    if pwd == "abcd":
+        st.session_state['authenticated'] = True
+        st.rerun()
+    elif pwd:
+        st.error("Incorrect password")
     st.stop()
 
 # --- State Management ---
@@ -162,13 +168,16 @@ if st.session_state.current_view == "screener":
     if scanned_df is not None and not scanned_df.empty:
         st.subheader("Screener Results")
         scanned_df['Analyze'] = scanned_df['Ticker'].apply(lambda x: f"/?ticker={x}")
-        cols = ['Analyze'] + [c for c in scanned_df.columns if c != 'Analyze']
+        scanned_df['INDmoney'] = scanned_df['Ticker'].apply(lambda x: f"https://www.google.com/search?q=site:indmoney.com+{x.replace('.NS', '')}+stock")
+        
+        cols = ['Analyze', 'INDmoney', 'Ticker', 'Name'] + [c for c in scanned_df.columns if c not in ['Analyze', 'INDmoney', 'Ticker', 'Name']]
         scanned_df = scanned_df[cols]
         
         st.dataframe(
             scanned_df,
             column_config={
                 "Analyze": st.column_config.LinkColumn("Analyze Link", display_text="Analyze 🔗"),
+                "INDmoney": st.column_config.LinkColumn("INDmoney", display_text="INDmoney ↗️"),
                 "Projected Return (%)": st.column_config.NumberColumn("Return (%)", format="%.1f%%")
             },
             hide_index=True,

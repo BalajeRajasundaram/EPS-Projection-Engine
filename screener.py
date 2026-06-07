@@ -27,6 +27,7 @@ def scan_index(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
             t = yf.Ticker(ticker_symbol)
             info = t.info
             
+            stock_name = info.get('shortName', info.get('longName', ticker_symbol))
             current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
             if current_price <= 0: continue
             
@@ -98,6 +99,7 @@ def scan_index(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
                 
             data_list.append({
                 'Ticker': ticker_symbol,
+                'Name': stock_name,
                 'Classification': classification,
                 'Current Price': round(current_price, 2),
                 'Projected 5Y Price': round(year_5_price, 2),
