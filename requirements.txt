@@ -5,3 +5,5 @@ numpy
 matplotlib
 xlsxwriter
 plotly
+requests
+lxml
