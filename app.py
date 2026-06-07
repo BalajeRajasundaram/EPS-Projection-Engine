@@ -9,6 +9,10 @@ import xlsxwriter
 
 st.set_page_config(page_title="EPS Projection Engine", layout="wide")
 
+password = st.text_input("🔒 Enter Password to access the Engine:", type="password")
+if password != "abcd":
+    st.stop()
+
 st.title("📈 EPS Projection & Valuation Engine")
 st.markdown("Fetch historical data, adjust parameters, and generate 10-year stock value projections to Excel.")
 
@@ -37,7 +41,7 @@ with st.expander("ℹ️ How Projections Are Calculated (Formulas)", expanded=Fa
 
 # Sidebar settings
 st.sidebar.header("⚙️ Settings")
-max_growth_cap = st.sidebar.slider("Maximum Growth Cap (%)", min_value=5.0, max_value=50.0, value=20.0, step=1.0)
+max_growth_cap = st.sidebar.slider("Maximum Growth Cap (%)", min_value=5.0, max_value=50.0, value=10.0, step=1.0)
 discount_rate = st.sidebar.slider("Required Rate of Return (%)", min_value=5.0, max_value=25.0, value=12.0, step=1.0)
 st.sidebar.markdown("*Used to discount the Year 5 projected price back to today to determine fair value.*")
 
@@ -83,6 +87,7 @@ def fetch_stock_data(tickers):
             current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
             pe_ratio = info.get('trailingPE', info.get('forwardPE', 15))
             current_eps = info.get('trailingEps', info.get('forwardEps', 0))
+            div_yield = info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0
             
             if current_eps <= 0:
                 current_eps = current_price / pe_ratio if pe_ratio > 0 else 0
@@ -140,6 +145,7 @@ def fetch_stock_data(tickers):
                 '5-Year Avg P/E': round(avg_pe_5y, 2) if avg_pe_5y else round(pe_ratio, 2),
                 'Target P/E': round(target_pe, 2),
                 'Industry P/E': round(pe_ratio * 0.9, 2), # Default mock industry PE
+                'Dividend Yield (%)': round(div_yield, 2),
                 'Net Profit Growth (%)': round(rate_np * 100, 1),
                 'Raw EPS Growth (%)': round(rate_eps * 100, 1),
                 '10-Year Price Growth (%)': round(rate_10y * 100, 1),
@@ -309,17 +315,24 @@ if st.session_state.raw_data is not None and not st.session_state.raw_data.empty
                 discounted_fair_value = year_5_price / ((1 + (discount_rate / 100.0)) ** 5)
                 margin_of_safety = ((discounted_fair_value / current_price) - 1) * 100 if current_price > 0 else 0
                 
-                if margin_of_safety > 10:
-                    val_status = "🟢 Undervalued"
-                elif margin_of_safety < -10:
-                    val_status = "🔴 Overvalued"
-                else:
-                    val_status = "🟡 Fairly Valued"
+                # Industry Fair Value
+                year_5_ind_price = eps * ((1 + r_np) ** 5) * ind_pe
+                ind_fair_value = year_5_ind_price / ((1 + (discount_rate / 100.0)) ** 5)
+                ind_margin_of_safety = ((ind_fair_value / current_price) - 1) * 100 if current_price > 0 else 0
+                
+                def get_val_status(mos):
+                    if mos > 10: return "🟢 Undervalued"
+                    elif mos < -10: return "🔴 Overvalued"
+                    else: return "🟡 Fairly Valued"
+                
+                val_status = get_val_status(margin_of_safety)
+                ind_val_status = get_val_status(ind_margin_of_safety)
                 
                 doubles_text = "✅ Yes (Grows >100%)" if growth_pct >= 100 else "❌ No"
-                st.markdown(f"**Current Price:** ${current_price:.2f} | **Projected Year 5 Price (via Net Profit & Past Avg P/E):** ${year_5_price:.2f}")
+                st.markdown(f"**Current Price:** ${current_price:.2f} | **Projected Year 5 Price (via Net Profit & Target P/E):** ${year_5_price:.2f}")
                 st.markdown(f"**5-Year Return:** {growth_pct:.1f}% | **Will it double?** {doubles_text}")
-                st.markdown(f"**Intrinsic Fair Value Today (assuming {discount_rate}% required return):** ${discounted_fair_value:.2f} ({val_status})")
+                st.markdown(f"**DCF Fair Value (via Target P/E):** ${discounted_fair_value:.2f} ({val_status})")
+                st.markdown(f"**Industry Fair Value (via Industry P/E):** ${ind_fair_value:.2f} ({ind_val_status})")
                 
                 # Preview Plot side-by-side using Plotly
                 current_year = pd.Timestamp.now().year
