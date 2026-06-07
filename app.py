@@ -359,13 +359,15 @@ elif st.session_state.current_view == "analysis":
             st.subheader(f"{ticker} Projections")
             
             year_5_price = eps * ((1 + r_np) ** 5) * stock_pe
+            year_5_price_eps = eps * ((1 + r_eps) ** 5) * stock_pe
+            year_5_ind_price = eps * ((1 + r_np) ** 5) * ind_pe
+            
             current_price = row['Current Price']
             growth_pct = ((year_5_price / current_price) - 1) * 100 if current_price > 0 else 0
             
             discounted_fair_value = year_5_price / ((1 + (discount_rate / 100.0)) ** 5)
             margin_of_safety = ((discounted_fair_value / current_price) - 1) * 100 if current_price > 0 else 0
             
-            year_5_ind_price = eps * ((1 + r_np) ** 5) * ind_pe
             ind_fair_value = year_5_ind_price / ((1 + (discount_rate / 100.0)) ** 5)
             ind_margin_of_safety = ((ind_fair_value / current_price) - 1) * 100 if current_price > 0 else 0
             
@@ -378,10 +380,18 @@ elif st.session_state.current_view == "analysis":
             ind_val_status = get_val_status(ind_margin_of_safety)
             
             doubles_text = "✅ Yes (Grows >100%)" if growth_pct >= 100 else "❌ No"
-            st.markdown(f"**Current Price:** ${current_price:.2f} | **Projected Year 5 Price (via Net Profit & Target P/E):** ${year_5_price:.2f}")
-            st.markdown(f"**5-Year Return:** {growth_pct:.1f}% | **Will it double?** {doubles_text}")
-            st.markdown(f"**DCF Fair Value (via Target P/E):** ${discounted_fair_value:.2f} ({val_status})")
-            st.markdown(f"**Industry Fair Value (via Industry P/E):** ${ind_fair_value:.2f} ({ind_val_status})")
+            st.markdown(f"**Current Price:** ${current_price:.2f} | **Will it double in 5 years?** {doubles_text}")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.markdown("### 🎯 5-Year Target Prices")
+                st.markdown(f"- **Via Net Profit Growth:** ${year_5_price:.2f}")
+                st.markdown(f"- **Via Target P/E:** ${year_5_price_eps:.2f}")
+                st.markdown(f"- **Via Industrial P/E:** ${year_5_ind_price:.2f}")
+            with col_b:
+                st.markdown("### ⚖️ Fair Value Today")
+                st.markdown(f"- **DCF Fair Value:** ${discounted_fair_value:.2f} ({val_status})")
+                st.markdown(f"- **Industry Fair Value:** ${ind_fair_value:.2f} ({ind_val_status})")
             
             current_year = pd.Timestamp.now().year
             real_years = list(range(current_year + 1, current_year + projection_length + 1))
