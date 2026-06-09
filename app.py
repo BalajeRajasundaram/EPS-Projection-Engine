@@ -403,16 +403,18 @@ elif st.session_state.current_view == "analysis":
                     if st.button("Fetch FMP FCF Fair Value", key=f"fmp_{ticker}"):
                         import requests
                         try:
-                            res = requests.get(f"https://financialmodelingprep.com/api/v3/discounted-cash-flow/{ticker}?apikey={fmp_key}")
+                            res = requests.get(f"https://financialmodelingprep.com/stable/discounted-cash-flow?symbol={ticker}&apikey={fmp_key}")
                             if res.status_code == 200:
                                 data = res.json()
                                 if data and len(data) > 0:
                                     fmp_dcf = data[0].get('dcf', 'N/A')
+                                    if isinstance(fmp_dcf, (int, float)):
+                                        fmp_dcf = round(fmp_dcf, 2)
                                     st.success(f"**FMP Free Cash Flow DCF Value:** ${fmp_dcf}")
                                 else:
                                     st.warning("FMP does not have DCF data for this ticker.")
                             else:
-                                st.error(f"Failed to fetch FMP data. Status: {res.status_code}")
+                                st.error(f"Failed to fetch FMP data. Status: {res.status_code} - {res.text}")
                         except Exception as e:
                             st.error(f"Error fetching from FMP: {e}")
             
