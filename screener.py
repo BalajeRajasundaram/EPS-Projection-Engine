@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 @st.cache_data(ttl=86400) # Cache for 24 hours
-def scan_index_v2(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
+def scan_index_v3(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
     cap = max_growth_cap_pct / 100.0
     
     # We will only scan the first 100 stocks of S&P500 to avoid a massive 15-minute wait, 
@@ -29,6 +29,7 @@ def scan_index_v2(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
             
             stock_name = info.get('shortName', info.get('longName', ticker_symbol))
             current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+            ws_target = info.get('targetMeanPrice', 0)
             if current_price <= 0: continue
             
             pe_ratio = info.get('trailingPE', info.get('forwardPE', 15))
@@ -107,6 +108,7 @@ def scan_index_v2(index_name, tickers, max_growth_cap_pct, discount_rate_pct):
                 'Classification (Target P/E)': classification,
                 'Classification (Industry P/E)': classification_ind,
                 'Current Price': round(current_price, 2),
+                'Wall St Target': round(ws_target, 2) if ws_target else None,
                 'Projected 5Y Price': round(year_5_price, 2),
                 'Projected Return (%)': round(growth_pct, 1),
                 'Target P/E': round(target_pe, 2),

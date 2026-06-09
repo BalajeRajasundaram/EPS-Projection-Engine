@@ -79,6 +79,7 @@ def fetch_stock_data(tickers_list):
             pe_ratio = info.get('trailingPE', info.get('forwardPE', 15))
             current_eps = info.get('trailingEps', info.get('forwardEps', 0))
             div_yield = info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0
+            ws_target = info.get('targetMeanPrice', 0)
             
             if current_eps <= 0:
                 current_eps = current_price / pe_ratio if pe_ratio > 0 else 0
@@ -133,7 +134,8 @@ def fetch_stock_data(tickers_list):
                 'Net Profit Growth (%)': round(rate_np * 100, 1),
                 'Raw EPS Growth (%)': round(rate_eps * 100, 1),
                 '10-Year Price Growth (%)': round(rate_10y * 100, 1),
-                '15-Year Price Growth (%)': round(rate_15y * 100, 1)
+                '15-Year Price Growth (%)': round(rate_15y * 100, 1),
+                'Wall St 1Y Target': round(ws_target, 2) if ws_target else None
             })
         except Exception as e:
             st.error(f"Error fetching {ticker_symbol}: {e}")
@@ -380,7 +382,10 @@ elif st.session_state.current_view == "analysis":
             ind_val_status = get_val_status(ind_margin_of_safety)
             
             doubles_text = "✅ Yes (Grows >100%)" if growth_pct >= 100 else "❌ No"
-            st.markdown(f"**Current Price:** ${current_price:.2f} | **Will it double in 5 years?** {doubles_text}")
+            ws_tgt = row.get('Wall St 1Y Target', None)
+            ws_tgt_str = f" | **Wall St 1Y Target:** ${ws_tgt:.2f}" if pd.notna(ws_tgt) else ""
+            
+            st.markdown(f"**Current Price:** ${current_price:.2f}{ws_tgt_str} | **Will it double in 5 years?** {doubles_text}")
             
             col_a, col_b = st.columns(2)
             with col_a:
