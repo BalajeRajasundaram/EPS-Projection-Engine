@@ -397,6 +397,24 @@ elif st.session_state.current_view == "analysis":
                 st.markdown("### ⚖️ Fair Value Today")
                 st.markdown(f"- **DCF Fair Value:** ${discounted_fair_value:.2f} ({val_status})")
                 st.markdown(f"- **Industry Fair Value:** ${ind_fair_value:.2f} ({ind_val_status})")
+                
+                fmp_key = st.secrets.get("FMP_API_KEY", "")
+                if fmp_key:
+                    if st.button("Fetch FMP FCF Fair Value", key=f"fmp_{ticker}"):
+                        import requests
+                        try:
+                            res = requests.get(f"https://financialmodelingprep.com/api/v3/discounted-cash-flow/{ticker}?apikey={fmp_key}")
+                            if res.status_code == 200:
+                                data = res.json()
+                                if data and len(data) > 0:
+                                    fmp_dcf = data[0].get('dcf', 'N/A')
+                                    st.success(f"**FMP Free Cash Flow DCF Value:** ${fmp_dcf}")
+                                else:
+                                    st.warning("FMP does not have DCF data for this ticker.")
+                            else:
+                                st.error(f"Failed to fetch FMP data. Status: {res.status_code}")
+                        except Exception as e:
+                            st.error(f"Error fetching from FMP: {e}")
             
             current_year = pd.Timestamp.now().year
             real_years = list(range(current_year + 1, current_year + projection_length + 1))
